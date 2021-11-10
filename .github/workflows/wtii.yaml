@@ -61,4 +61,5 @@ jobs:
             --set image.repository=$REGISTRY_HOSTNAME/$PROJECT_ID/wtii/$IMAGE_NAME \
             --set image.tag=$GIT_TAG \
             --wait
+          echo "----"
           kubectl get services -o wide
