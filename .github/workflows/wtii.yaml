@@ -50,8 +50,6 @@ jobs:
       - name: Install Helm
         run: |
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-      - name: Configure Kubernetes client
-        run: gcloud container clusters get-credentials k8s
       - name: Deploy
         run: |
           gcloud container clusters get-credentials $CLUSTER \
