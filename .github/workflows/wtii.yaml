@@ -2,7 +2,7 @@
 name: build and push image
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 jobs:
   build-push-gcr:
     name: Build image
