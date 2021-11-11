@@ -10,7 +10,6 @@ env:
   ZONE: europe-west4
   CLUSTER: k8s
   REGISTRY_HOSTNAME: europe-west4-docker.pkg.dev
-  GIT_TAG: v0.1.0
 jobs:
   build-push-gcr:
     name: Build image
@@ -25,10 +24,16 @@ jobs:
           export_default_credentials: true
       - name: Build image
         run: docker build -t $IMAGE_NAME:latest .
+      - name: Tag the release
+        id: increment-git-tag
+        run: |
+          bash ./git_update.sh -v minor
       - name: Configure client
         run: |-
           gcloud auth configure-docker $REGISTRY_HOSTNAME --quiet
       - name: Push image
+        env:
+          GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
         run: |-
           docker tag $IMAGE_NAME:latest $REGISTRY_HOSTNAME/$PROJECT_ID/wtii/$IMAGE_NAME:latest
           docker tag $IMAGE_NAME:latest $REGISTRY_HOSTNAME/$PROJECT_ID/wtii/$IMAGE_NAME:$GIT_TAG
@@ -61,5 +66,4 @@ jobs:
             --set image.repository=$REGISTRY_HOSTNAME/$PROJECT_ID/wtii/$IMAGE_NAME \
             --set image.tag=$GIT_TAG \
             --wait
-          echo "----"
           kubectl get services -o wide
