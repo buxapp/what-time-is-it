@@ -38,8 +38,8 @@ elif [[ $VERSION == 'patch' ]]
 then
   VNUM3=$((VNUM3+1))
 else
-  echo "No version type (https://semver.org/) or incorrect type specified, try: -v [major, minor, patch]"
-  exit 1
+  echo ::set-output name=git-tag::$CURRENT_VERSION
+  exit 0
 fi
 
 # create new tag

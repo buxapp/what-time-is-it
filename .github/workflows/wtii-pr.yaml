@@ -1,0 +1,73 @@
+---
+name: build and push image
+on:
+  pull_request:
+    branches: [ master ]
+env:
+  IMAGE_NAME: what-time-is-it
+  PROJECT_ID: bux-assignment-dpakhomov
+  GITHUB_SHA: ${{ github.sha }}
+  ZONE: europe-west4
+  CLUSTER: k8s
+  REGISTRY_HOSTNAME: europe-west4-docker.pkg.dev
+jobs:
+  build-push-gcr:
+    name: Build image
+    runs-on: ubuntu-latest
+    outputs:
+      last-tag: ${{ steps.increment-git-tag.outputs.git-tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.REPO_KEY }}
+          project_id: ${{ env.PROJECT_ID }}
+          export_default_credentials: true
+      - name: Build image
+        run: docker build -t $IMAGE_NAME:latest .
+      - name: Tag the release
+        id: increment-git-tag
+        run: |
+          bash ./git_update.sh
+      - name: Configure client
+        run: |-
+          gcloud auth configure-docker $REGISTRY_HOSTNAME --quiet
+      - name: Push image
+        env:
+          GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |-
+          docker tag $IMAGE_NAME:latest $REGISTRY_HOSTNAME/$PROJECT_ID/wtii/$IMAGE_NAME:$GIT_TAG-${GITHUB_SHA::8}
+          docker push $REGISTRY_HOSTNAME/$PROJECT_ID/wtii/$IMAGE_NAME:$GIT_TAG-${GITHUB_SHA::8}
+      
+  helm-deploy:
+    name: Deploy image
+    needs: build-push-gcr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - id: get-credentials
+        uses: google-github-actions/get-gke-credentials@main
+        with:
+          cluster_name: ${{ env.CLUSTER }}
+          location: ${{ env.ZONE }}
+          credentials: ${{ secrets.GKE_KEY }}
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - name: Deploy
+        env:
+          GIT_TAG: ${{ needs.build-push-gcr.outputs.last-tag }}
+        run: |
+          gcloud container clusters get-credentials $CLUSTER \
+            --zone $ZONE \
+            --project $PROJECT_ID
+          helm upgrade $IMAGE_NAME ./chart/ \
+            --namespace develop
+            --install \
+            --set ingress.annotations.cert-manager\\.io/issuer="letsencrypt-prod" \
+            --set image.repository=$REGISTRY_HOSTNAME/$PROJECT_ID/wtii/$IMAGE_NAME \
+            --set image.tag=$GIT_TAG-${GITHUB_SHA::8} \
+            --wait
+          kubectl get services -o wide
