@@ -1,8 +1,6 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -31,8 +29,6 @@ jobs:
       run: |
         git config --global user.email "blazhe.mitrev@gmail.com"
         git config --global user.name "bmitrev"
-        cd ..
-        git clone https://$GITOPS_TOKEN@github.com/bmitrev/what-time-is-it.git
         cd chart
         git checkout -b buxActions-$GITHUB_RUN_NUMBER
         sed -i "s/tag: .*$/tag: $GITHUB_RUN_NUMBER/g" values.yaml 
