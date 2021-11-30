@@ -1,6 +1,8 @@
 name: Docker Image CI
 
 on:
+  push:
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -36,6 +38,6 @@ jobs:
         git add -A
         git commit -m "Testing commit"
         git push --set-upstream origin buxActions-$GITHUB_RUN_NUMBER
-        git status
+
   
     
