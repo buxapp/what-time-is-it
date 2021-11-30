@@ -21,10 +21,10 @@ jobs:
         docker login -u $DOCKER_USER -p $DOCKER_PASS
     - name: Docker build
       run: |
-        docker build -t 1561358218018:bux-assignment:$GITHUB_RUN_NUMBER .
+        docker build -t test:bux-assignment:$GITHUB_RUN_NUMBER .
     - name: Docker push
       run: |
-        docker push 1561358218018:bux-assignment:$GITHUB_RUN_NUMBER
+        docker push test:bux-assignment:$GITHUB_RUN_NUMBER
     - name: Clone infra repo
       env:
         GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
