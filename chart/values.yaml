@@ -8,7 +8,7 @@ image:
   repository: 1561358218018/bux-assignment
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: 10
 
 imagePullSecrets: []
 nameOverride: ""
