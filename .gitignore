@@ -6,3 +6,11 @@
 *.iml
 *.ipr
 *.iws
+
+# Challenge
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+.DS_Store
+*.swp
