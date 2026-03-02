@@ -1,10 +1,10 @@
 package com.getbux.assignment
 
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.html.respondHtml
-import io.ktor.routing.get
-import io.ktor.routing.routing
+import io.ktor.server.application.Application
+import io.ktor.server.application.call
+import io.ktor.server.html.respondHtml
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
 import kotlinx.html.a
 import kotlinx.html.body
 import kotlinx.html.h1
@@ -20,8 +20,7 @@ import java.time.format.DateTimeFormatter
 fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
 
 @Suppress("unused") // Referenced in application.conf
-@kotlin.jvm.JvmOverloads
-fun Application.module(testing: Boolean = false) {
+fun Application.module() {
     routing {
         get("/") {
             call.respondHtml {
