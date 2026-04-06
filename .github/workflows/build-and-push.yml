@@ -1,0 +1,65 @@
+name: Build And Push
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: homework-492515
+  REGION: europe-west1
+  REPOSITORY: what-time-is-it
+  IMAGE_NAME: what-time-is-it
+  IMAGE_URI: europe-west1-docker.pkg.dev/homework-492515/what-time-is-it/what-time-is-it
+
+jobs:
+  verify:
+    name: Verify Container Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t "${IMAGE_NAME}:${GITHUB_SHA}" .
+
+  publish:
+    name: Push Image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+
+      - name: Build release image
+        run: |
+          docker build \
+            -t "${IMAGE_URI}:${GITHUB_SHA}" \
+            -t "${IMAGE_URI}:latest" \
+            .
+
+      - name: Push image tags
+        run: |
+          docker push "${IMAGE_URI}:${GITHUB_SHA}"
+          docker push "${IMAGE_URI}:latest"

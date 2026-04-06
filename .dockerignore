@@ -1,3 +1,7 @@
-target
+.git
+.github
 .idea
 *.iml
+target
+README.md
+chart
