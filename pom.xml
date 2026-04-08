@@ -97,7 +97,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration><source>21</source><target>21</target></configuration>
+                <configuration><source>25</source><target>25</target></configuration>
             </plugin>
             <plugin>
                 <artifactId>kotlin-maven-plugin</artifactId>
